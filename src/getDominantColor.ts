@@ -11,9 +11,9 @@ type CountMap = {
 
 export interface ExtractColorOptions {
   /**
-   * List of colors to ignore.
+   * List of hex color codes to ignore.
    *
-   * @defaultValue `[rgb(0, 0, 0), rgb(255, 255, 255)]` Ignores black and white by default.
+   * @defaultValue `["#000000", "#ffffff"]` Ignores black and white by default.
    */
   ignore: string[];
 
@@ -93,7 +93,7 @@ const getColors = (data: Uint8ClampedArray, ignore: string[]) => {
 
 const defaultOptions: ExtractColorOptions = {
   // Ignore black and white
-  ignore: ['rgb(0, 0, 0)', 'rgb(255, 255, 255)'],
+  ignore: ['#000000', '#ffffff'],
   scale: 0.3,
 };
 

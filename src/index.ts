@@ -8,12 +8,12 @@ const EXTS = ['.png'];
 const OUTPUT_FILE = 'bg-colors.json';
 
 const main = async (rootDir: string) => {
+  const spinner = ora('Starting extraction').start();
+
   const files = readdirSync(rootDir, { withFileTypes: true });
 
   const resultStream = createWriteStream(OUTPUT_FILE);
   resultStream.write('{');
-
-  const spinner = ora('Starting extraction').start();
 
   for (const [index, file] of files.entries()) {
     // Check if file ends with one of the permitted extensions
@@ -23,15 +23,15 @@ const main = async (rootDir: string) => {
 
       try {
         const extractedColors = await extractColors(img);
-        let chunk = `"${file.name}": "${extractedColors[0]}"`;
+        let chunk = `"${file.name}": ${JSON.stringify(extractedColors[0].hsl)}`;
         index === files.length - 1 ? (chunk += '}') : (chunk += ',');
         resultStream.write(chunk);
       } catch (error) {
         console.error(`Could not extract colors for '${file.name}'`, error);
       }
-    }
 
-    spinner.text = `Extracting colors from image ${index} of ${files.length}`;
+      spinner.text = `Extracting colors from image ${index} of ${files.length}`;
+    }
   }
 
   resultStream.close();

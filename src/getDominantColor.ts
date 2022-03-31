@@ -1,17 +1,24 @@
 // Have to import like this because `canvas` is a CommonJS module
 import canvas from 'canvas';
+import { rgbToHex } from './utils/rgbToHex.js';
+import { rgbToHsl } from './utils/rgbToHsl.js';
+
 const { createCanvas, loadImage } = canvas;
 
 type CountMap = {
   [key: string]: {
-    color: string;
+    color: {
+      hex: string;
+      rgb: { r: number; g: number; b: number };
+      hsl: { h: number; s: number; l: number };
+    };
     count: number;
   };
 };
 
 export interface ExtractColorOptions {
   /**
-   * List of hex color codes to ignore.
+   * List of colors to ignore. Please provide the colors in hex.
    *
    * @defaultValue `["#000000", "#ffffff"]` Ignores black and white by default.
    */
@@ -27,15 +34,6 @@ export interface ExtractColorOptions {
    */
   scale: number;
 }
-
-// Convert rgba color value to hex value
-const rgbaToHex = (r: number, g: number, b: number, a: number) => {
-  const hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-
-  // Return nothing if alpha is 255, else hex value
-  const hexAlpha = a === 255 ? '' : (a + 0x10000).toString(16).slice(-2);
-  return `${hex}${hexAlpha}`;
-};
 
 const getContext = (width: number, height: number) => {
   const canvas = createCanvas(width, height);
@@ -65,21 +63,26 @@ const getColors = (data: Uint8ClampedArray, ignore: string[]) => {
     if (alpha === 0) {
       continue;
     }
-    const rgbComponents = Array.from(data.subarray(i, i + 3)) as [number, number, number];
-    if (rgbComponents.some((c) => c === undefined)) {
+    const [r, g, b] = Array.from(data.subarray(i, i + 3)) as [number, number, number];
+    if ([r, g, b].some((c) => c === undefined)) {
       continue;
     }
-    const color = rgbaToHex(...rgbComponents, alpha);
+    const hexCode = rgbToHex(r, g, b);
+    const [h, s, l] = rgbToHsl(r, g, b);
 
-    if (ignore.includes(color)) {
+    if (ignore.includes(hexCode)) {
       continue;
     }
 
-    if (countMap[color]) {
-      countMap[color].count++;
+    if (countMap[hexCode]) {
+      countMap[hexCode].count++;
     } else {
-      countMap[color] = {
-        color: color,
+      countMap[hexCode] = {
+        color: {
+          hex: hexCode,
+          rgb: { r, g, b },
+          hsl: { h, s, l },
+        },
         count: 1,
       };
     }

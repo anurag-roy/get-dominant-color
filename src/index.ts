@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { createWriteStream, readFileSync, readdirSync } from 'fs';
+import { readFile, readdir, writeFile } from 'fs/promises';
 import { extractColors } from './getDominantColor.js';
 import ora from 'ora';
 
@@ -10,31 +10,28 @@ const OUTPUT_FILE = 'bg-colors.json';
 const main = async (rootDir: string) => {
   const spinner = ora('Starting extraction').start();
 
-  const files = readdirSync(rootDir, { withFileTypes: true });
+  const files = await readdir(rootDir, { withFileTypes: true });
 
-  const resultStream = createWriteStream(OUTPUT_FILE);
-  resultStream.write('{');
+  const output: any = {};
 
   for (const [index, file] of files.entries()) {
     // Check if file ends with one of the permitted extensions
     if (file.isFile() && EXTS.some((ext) => file.name.endsWith(ext))) {
       const imgPath = join(rootDir, file.name);
-      const img = readFileSync(imgPath);
+      const img = await readFile(imgPath);
 
       try {
-        const extractedColors = await extractColors(img);
-        let chunk = `"${file.name}": ${JSON.stringify(extractedColors[0].hsl)}`;
-        index === files.length - 1 ? (chunk += '}') : (chunk += ',');
-        resultStream.write(chunk);
+        const [dominantColor] = await extractColors(img);
+        output[file.name] = dominantColor.hex;
       } catch (error) {
         console.error(`Could not extract colors for '${file.name}'`, error);
       }
-
-      spinner.text = `Extracting colors from image ${index} of ${files.length}`;
     }
+
+    spinner.text = `Extracting colors from image ${index} of ${files.length}`;
   }
 
-  resultStream.close();
+  await writeFile(OUTPUT_FILE, JSON.stringify(output, null, 2));
 
   spinner.stopAndPersist({
     text: `Extracted colors from ${files.length} images`,

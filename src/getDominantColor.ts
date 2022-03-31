@@ -119,7 +119,7 @@ const defaultOptions: ExtractColorOptions = {
  * const img = await readFile('myImage.png');
  * const extractedColors = await extractColors(img, {quality: 0.5});
  *
- * console.log('The most dominant color in the image is', extractedColors[0]);
+ * console.log('The most dominant color in the image is', extractedColors[0].hex);
  * // The most dominant color in the image is #2fd3f2;
  * ```
  */

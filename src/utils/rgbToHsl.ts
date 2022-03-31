@@ -4,7 +4,7 @@
  * Converts an RGB color value to HSL. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
  * Assumes red, green, and blue are contained in the set [0, 255] and
- * returns hue, saturation, and lightness in the set [0, 100].
+ * returns hue, saturation, and lightness.
  *
  * @param red The red color value
  * @param green The green color value
@@ -27,21 +27,20 @@ export const rgbToHsl = (red: number, green: number, blue: number): [number, num
     hue = saturation = 0; // achromatic
   } else {
     const deviation = max - min;
-    saturation = lightness > 0.5 ? deviation / (2 - max - min) : deviation / (max + min);
+    saturation = lightness >= 0.5 ? deviation / (2 - (max + min)) : deviation / (max + min);
 
     switch (max) {
       case red:
-        hue = (green - blue) / deviation + (green < blue ? 6 : 0);
+        hue = ((green - blue) / deviation + 0) * 60;
         break;
       case green:
-        hue = (blue - red) / deviation + 2;
+        hue = ((blue - red) / deviation + 2) * 60;
         break;
       case blue:
-        hue = (red - green) / deviation + 4;
+        hue = ((red - green) / deviation + 4) * 60;
         break;
     }
-    hue = hue / 6;
   }
 
-  return [Math.round(hue * 100), Math.round(saturation * 100), Math.round(lightness * 100)];
+  return [Math.round(hue), Math.round(saturation * 100), Math.round(lightness * 100)];
 };

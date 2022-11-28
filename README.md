@@ -5,7 +5,7 @@ Get dominant color from an image.
 ## Usage
 
 ```
-npm start -- --rootDir=path/to/image/folder
+pnpm start --rootDir=path/to/image/folder
 ```
 
 ## Sample output
